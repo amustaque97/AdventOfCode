@@ -1,0 +1,18 @@
+use std::fs;
+
+fn main() {
+    let mut res = 0;
+    let brackets = fs::read_to_string("input1.txt").expect("Unable to open input file").to_owned().chars();
+
+    for ch in brackets {
+        if ch == '(' {
+            res += 1;
+            } else {
+            res -= 1;
+            }
+
+    }
+    
+    println!("{}", res);
+
+}
