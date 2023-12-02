@@ -34,6 +34,59 @@ fn part1() {
     println!("{}", ans.iter().sum::<u32>());
 }
 
+fn part2() {
+    let nums = [
+        "one", "1", "two", "2", "three", "3", "four", "4", "five", "5", "six", "6", "seven", "7",
+        "eight", "8", "nine", "9",
+    ];
+    let file = include_str!("../input.txt")
+        .split("\n")
+        .collect::<Vec<&str>>();
+    let mut total = 0;
+
+    for line in &file {
+        if line.is_empty() {
+            continue;
+        }
+        let mut first = None;
+        'out: for i in 0..line.len() {
+            for (index, num) in nums.iter().enumerate() {
+                if i + num.len() > line.len() {
+                    continue;
+                }
+                if line[i..i + num.len()] == **num {
+                    first = Some(1 + index / 2);
+                    break 'out;
+                }
+            }
+        }
+        let Some(first) = first else {
+                panic!("invalid input");
+            };
+
+        let mut last = None;
+        'out: for i in (0..line.len()).rev() {
+            for (index, num) in nums.iter().enumerate() {
+                if i + num.len() > line.len() {
+                    continue;
+                }
+                if line[i..i + num.len()] == **num {
+                    last = Some(1 + index / 2);
+                    break 'out;
+                }
+            }
+        }
+        let Some(last) = last else {
+                panic!("invalid input");
+            };
+
+        total += 10 * first as i32 + last as i32;
+    }
+
+    println!("{}", total);
+}
+
 fn main() {
     part1();
+    part2();
 }
