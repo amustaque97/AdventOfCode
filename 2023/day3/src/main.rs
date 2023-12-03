@@ -1,4 +1,6 @@
-#[derive(Debug)]
+const DR: [i32; 8] = [-1, 1, 0, 0, -1, -1, 1, 1];
+const DY: [i32; 8] = [0, 0, -1, 1, -1, 1, -1, 1];
+#[derive(Debug, Clone)]
 struct Parser {
     buf: String,
     cursor: usize,
@@ -73,14 +75,11 @@ fn check_all_directions(parser: &Parser, grid: &Vec<Vec<char>>, idx: usize) -> b
     let end = (parser.end - 1) as usize;
     let n = grid.len() as i32;
 
-    let dr: [i32; 8] = [-1, 1, 0, 0, -1, -1, 1, 1];
-    let dy: [i32; 8] = [0, 0, -1, 1, -1, 1, -1, 1];
-
     // downward
     for i in start..end {
-        for j in 0..dr.len() {
-            let new_x: i32 = idx as i32 + dr[j];
-            let new_y: i32 = i as i32 + dy[j];
+        for j in 0..DR.len() {
+            let new_x: i32 = idx as i32 + DR[j];
+            let new_y: i32 = i as i32 + DY[j];
             if new_x >= n || new_x <= 0 || new_y >= n || new_y <= 0 {
                 // dbg!(&parser.curr_num, "~");
                 continue;
@@ -123,4 +122,73 @@ fn main() {
         }
     }
     println!("{:?}", total);
+
+    // part2
+    let mut total2 = 0;
+    let mut numbers: Vec<(Parser, i32)> = Vec::new();
+    for (idx, line) in lines.iter().enumerate() {
+        if line.is_empty() {
+            continue;
+        }
+        let mut parser = Parser::new(&line.to_string(), idx);
+        while !parser.next_number().is_empty() || parser.cursor < parser.buf.len() {
+            if parser.curr_num.is_empty() {
+                continue;
+            } else {
+                // println!("{}", parser.curr_num);
+                numbers.push((parser.clone(), idx as i32));
+            }
+        }
+    }
+
+    let n = matrix.len();
+    let m = matrix[0].len();
+    // println!("{}, {}", n, m);
+
+    for i in 0..n {
+        for j in 0..m {
+            if matrix[i][j] == '*' {
+                    total2 += get_part_numbers(i as i32, j as i32, &numbers, &matrix);
+            }
+        }
+    }
+
+    println!("{:?}", total2);
+}
+
+fn get_part_numbers(i: i32, j: i32, numbers: &Vec<(Parser, i32)>, grid: &Vec<Vec<char>>) -> u32 {
+    let mut visited: Vec<String> = Vec::new();
+    let mut gears: Vec<String> = Vec::with_capacity(2);
+    let n = grid.len() as i32;
+    for k in 0..8 {
+        let new_x = i as i32 + DR[k];
+        let new_y = j as i32 + DY[k];
+        if new_x >= n || new_x < 0 || new_y >= n || new_y < 0 {
+            // dbg!(&parser.curr_num, "~");
+            continue;
+        }
+
+        for (num, row) in numbers {
+            for y in num.start - 1..num.end - 1 {
+                let t = format!("{}::{}:{}", num.curr_num, num.start, num.end);
+                if new_x == *row && new_y == y && !visited.contains(&t) {
+                    visited.push(t);
+                    if gears.len() == 2{
+                        return 0;
+                    }
+                    gears.push(num.curr_num.clone());
+                    // println!(
+                    //     "num {}\tnew_x {}\tnew_y {}\trow {}\tcol {}",
+                    //     num.curr_num, new_x, new_y, *row, y
+                    // );
+                }
+            }
+        }
+    }
+
+    if gears.len() < 2 {
+        return 0;
+    }
+
+    gears[0].parse::<u32>().unwrap() * gears[1].parse::<u32>().unwrap()
 }
