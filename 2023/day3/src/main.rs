@@ -6,18 +6,16 @@ struct Parser {
     cursor: usize,
     start: i32,
     end: i32,
-    line: usize,
     curr_num: String,
 }
 
 impl Parser {
-    fn new(input: &String, line: usize) -> Parser {
+    fn new(input: &String, ) -> Parser {
         Parser {
             buf: input.to_string(),
             cursor: 0,
             start: -1,
             end: -1,
-            line,
             curr_num: String::new(),
         }
     }
@@ -43,12 +41,12 @@ impl Parser {
             return command;
         }
         let mut ch = self.next();
-        let start = if ch.is_digit(10) {
+        let start = if ch.is_ascii_digit() {
             self.cursor as i32
         } else {
             -1
         };
-        while ch.is_digit(10) {
+        while ch.is_ascii_digit() {
             if start != self.start && self.start < self.cursor as i32 {
                 self.start = self.cursor as i32;
             }
@@ -86,13 +84,13 @@ fn check_all_directions(parser: &Parser, grid: &Vec<Vec<char>>, idx: usize) -> b
             }
             let ch = grid[new_x as usize][new_y as usize];
             // println!("{} => {}", parser.curr_num, ch);
-            if !ch.is_digit(10) && ch != '.' {
+            if !ch.is_ascii_digit() && ch != '.' {
                 symbol = true;
                 break;
             }
         }
     }
-    return symbol;
+    symbol
 }
 
 fn main() {
@@ -111,7 +109,7 @@ fn main() {
         if line.is_empty() {
             continue;
         }
-        let mut parser = Parser::new(&line.to_string(), idx);
+        let mut parser = Parser::new(&line.to_string());
         while !parser.next_number().is_empty() || parser.cursor < parser.buf.len() {
             if parser.curr_num.is_empty() {
                 continue;
@@ -130,7 +128,7 @@ fn main() {
         if line.is_empty() {
             continue;
         }
-        let mut parser = Parser::new(&line.to_string(), idx);
+        let mut parser = Parser::new(&line.to_string());
         while !parser.next_number().is_empty() || parser.cursor < parser.buf.len() {
             if parser.curr_num.is_empty() {
                 continue;
@@ -148,7 +146,7 @@ fn main() {
     for i in 0..n {
         for j in 0..m {
             if matrix[i][j] == '*' {
-                    total2 += get_part_numbers(i as i32, j as i32, &numbers, &matrix);
+                total2 += get_part_numbers(i as i32, j as i32, &numbers, &matrix);
             }
         }
     }
@@ -161,8 +159,8 @@ fn get_part_numbers(i: i32, j: i32, numbers: &Vec<(Parser, i32)>, grid: &Vec<Vec
     let mut gears: Vec<String> = Vec::with_capacity(2);
     let n = grid.len() as i32;
     for k in 0..8 {
-        let new_x = i as i32 + DR[k];
-        let new_y = j as i32 + DY[k];
+        let new_x = i + DR[k];
+        let new_y = j + DY[k];
         if new_x >= n || new_x < 0 || new_y >= n || new_y < 0 {
             // dbg!(&parser.curr_num, "~");
             continue;
@@ -173,7 +171,7 @@ fn get_part_numbers(i: i32, j: i32, numbers: &Vec<(Parser, i32)>, grid: &Vec<Vec
                 let t = format!("{}::{}:{}", num.curr_num, num.start, num.end);
                 if new_x == *row && new_y == y && !visited.contains(&t) {
                     visited.push(t);
-                    if gears.len() == 2{
+                    if gears.len() == 2 {
                         return 0;
                     }
                     gears.push(num.curr_num.clone());
