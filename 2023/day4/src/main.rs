@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 fn main() {
     let lines = include_str!("../input.txt")
@@ -7,7 +7,8 @@ fn main() {
         .collect::<Vec<String>>();
 
     let mut total1 = 0;
-    for line in lines {
+    let mut records: Vec<(usize, usize)> = Vec::new();
+    for line in lines.iter() {
         if line.is_empty() {
             continue;
         }
@@ -40,16 +41,40 @@ fn main() {
                 .into_iter(),
         );
         // .collect::<Vec<String>>();
-        let mut p = user_cards
+        let p = user_cards
             .intersection(&winning_cards)
             .collect::<Vec<&u32>>()
             .len();
         if p > 0 {
-            p -= 1;
             // println!("{}", p);
-            total1 += 2u32.pow(p.try_into().unwrap());
+            total1 += 2u32.pow(p as u32 - 1);
         }
 
+        let card_num = parse_str[0]
+            .split_whitespace()
+            .nth(1)
+            .unwrap()
+            .parse::<usize>()
+            .unwrap();
+
+        records.push((card_num, p));
     }
     println!("{:?}", total1);
+
+    let mut total2 = 0;
+    let mut ans = [1usize; 200];
+
+    for (card_num, count) in records.iter() {
+        for _ in 0..ans[*card_num] {
+            for i in card_num + 1..card_num + count + 1 {
+                ans[i] += 1;
+            }
+        }
+    }
+
+    for (card_num, _) in records.iter() {
+        total2 += ans[*card_num];
+    }
+
+    println!("{:?}", total2);
 }
